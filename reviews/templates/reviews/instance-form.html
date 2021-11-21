@@ -1,0 +1,43 @@
+{% extends 'reviews/base.html' %}
+
+{% block title %}
+    {% if title == 'Review' %}
+        {% if instance_model is None %}
+            New {{title}}
+           {% else %}
+            Editing {{title}} - {{ instance.title }}
+        {% endif %}
+        {% else %}
+            {% if instance is None %}
+                New {{title}}
+                {% else %}
+                    Editing {{title}} - {{ instance.name }}
+             {% endif %}
+    {% endif %}
+   
+{% endblock title %}
+
+
+{% block content %}
+    {%  if title == 'Review' %}
+            {% if instance_model is None %}
+                <h2><em> New {{title}}</em></h2>
+                {% else %}
+                    <h2><em> {{ instance.title }} </em></h2>
+            {% endif %}
+
+        {% else %}
+            {% if instance is None %}
+                <h2><em> New {{title}}</em></h2>
+                {% else %}
+                    <h2><em> {{ instance.name }} </em></h2>
+            {% endif %}
+    {% endif %}
+
+    
+    <form method="post">
+        {% csrf_token %}
+        {{form.as_p}}
+        <input type="submit" value=" {% if instance is None %} Create {% else %} Save {% endif %}" class="btn btn-primary">
+    </form>
+{% endblock content %}

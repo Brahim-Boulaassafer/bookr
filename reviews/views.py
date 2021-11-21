@@ -1,7 +1,9 @@
-from django.shortcuts import render, get_object_or_404
-from .models import Book, Review, Contributor
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.utils import timezone
+from .models import Book, Review, Contributor, Publisher
 from .utils import average_rating
-from .forms import SearchForm
+from .forms import PublisherForm, SearchForm, ReviewForm
 
 def book_list(request):
     books = Book.objects.all()
@@ -56,3 +58,42 @@ def book_search(request):
         
     context = {'form':form, 'book_list':books, 'search':search_field}
     return render(request, 'reviews/search-results.html',context)
+
+
+def publisher_edit(request, pk=None):
+    publisher = None
+
+    if pk is not None:
+        publisher = get_object_or_404(Publisher, pk=pk)
+
+    form = PublisherForm(request.POST or None, instance=publisher)
+    if form.is_valid():
+        updated_publisher = form.save()
+        if updated_publisher is None:
+            messages.success(request, f"Publisher ``{updated_publisher}`` was created.")
+        else:
+            messages.success(request, f"Publisher ``{updated_publisher}`` was updated.")
+        return redirect('book:publisher_edit', updated_publisher.pk)
+    
+    return render(request, 'reviews/instance-form.html',{ 'form':form, 'instance':publisher, 'title':'Publisher'})
+
+
+def review_edit(request, book_pk, review_pk= None):
+    book = get_object_or_404(Book, pk=book_pk)
+    review = None
+    if review_pk is not None:
+        review = get_object_or_404(Review, pk=review_pk)
+    
+    form = ReviewForm(request.POST or None, instance=review)
+    if form.is_valid():
+        updated_view = form.save(commit=False)
+        updated_view.book = book
+        updated_view.date_edited = timezone.now()
+        form.save()
+        if updated_view is None:
+            messages.success(request, f'Review for "{book}" was created.')
+        else:
+            messages.success(request, f'Review for "{book}" was updated.')
+        return redirect('book:book_details', book_pk)
+
+    return render(request, 'reviews/instance-form.html', {'form':form, 'instance': book, 'title':'Review', 'instance_model':review})
