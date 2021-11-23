@@ -33,6 +33,9 @@ class Book(models.Model):
     isbn = models.CharField(max_length=30,help_text="Book Serie Number")
     publisher = models.ForeignKey(Publisher, on_delete= models.CASCADE)
     contributors = models.ManyToManyField(Contributor, through="BookContributor")
+    cover = models.ImageField(upload_to='book_covers/', blank=True, null=True)
+    sample = models.FileField(upload_to='book_samples/', blank=True, null=True)
+
 
     def __str__(self):
         return f"{self.title} ({self.isbn})"

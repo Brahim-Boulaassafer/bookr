@@ -1,9 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.utils import timezone
+
+from PIL import Image
+
 from .models import Book, Review, Contributor, Publisher
 from .utils import average_rating
-from .forms import PublisherForm, SearchForm, ReviewForm
+from .forms import PublisherForm, SearchForm, ReviewForm, BookMediaForm
 
 def book_list(request):
     books = Book.objects.all()
@@ -97,3 +100,27 @@ def review_edit(request, book_pk, review_pk= None):
         return redirect('book:book_details', book_pk)
 
     return render(request, 'reviews/instance-form.html', {'form':form, 'instance': book, 'title':'Review', 'instance_model':review})
+
+
+def book_media(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    form = BookMediaForm(request.POST or None, request.FILES or None, instance=book)
+    instance = book
+
+    if form.is_valid():
+        
+        if form.cleaned_data.get('cover'):
+            form.save(False) 
+            image = Image.open(form.cleaned_data.get('cover'))
+            image.thumbnail = (300, 300)
+            form.save()
+            instance = book #form.cleaned_data.get('cover')
+            messages.success(request, f"{book} updated succefully")
+            return redirect('book:book_details', book.pk)
+    
+    context = {'form':form, 'instance':instance, 'is_file_upload':True}
+    return render(request, 'reviews/instance-form.html', context)
+
+    
+
+

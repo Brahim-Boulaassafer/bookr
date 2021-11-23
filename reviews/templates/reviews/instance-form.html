@@ -11,7 +11,7 @@
             {% if instance is None %}
                 New {{title}}
                 {% else %}
-                    Editing {{title}} - {{ instance.name }}
+                    Editing {{title}} - {{ instance }}
              {% endif %}
     {% endif %}
    
@@ -30,12 +30,12 @@
             {% if instance is None %}
                 <h2><em> New {{title}}</em></h2>
                 {% else %}
-                    <h2><em> {{ instance.name }} </em></h2>
+                    <h2><em>Editing {{ instance }} </em></h2>
             {% endif %}
     {% endif %}
 
     
-    <form method="post">
+    <form method="post" {% if is_file_upload %} enctype="multipart/form-data" {% endif %}>
         {% csrf_token %}
         {{form.as_p}}
         <input type="submit" value=" {% if instance is None %} Create {% else %} Save {% endif %}" class="btn btn-primary">

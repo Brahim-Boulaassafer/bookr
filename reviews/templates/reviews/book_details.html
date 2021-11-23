@@ -6,14 +6,22 @@
 <ul class="list-group">
 
   <li class="list-group-item">
-      <span class="text-info">Title: </span> <span>{{ book.title }}</span>
-      <br>
-      <span class="text-info">Publisher: </span><span>{{ book.publisher }}</span>
-      <br>
-      <span class="text-info">Publication Date: </span><span>{{ book.publication_date }}</span>
-      <br>
-      <span class="text-info">Rating: </span><span class="badge badge-primary badge-pill">{{ book_rating }}</span>
-      <br>
+        {% if book.cover %}
+            <img src="{{book.cover.url}}" alt="{{book.title}}">
+            <br>
+        {% endif %}
+        <span class="text-info">Title: </span> <span>{{ book.title }}</span>
+        <br>
+        <span class="text-info">Publisher: </span><span>{{ book.publisher }}</span>
+        <br>
+        <span class="text-info">Publication Date: </span><span>{{ book.publication_date }}</span>
+        <br>
+        {% if book.sample %}
+            <span class="text-info">sample: </span><span class="text-primary"><a href="{{book.sample.url}}">Download</a></span>
+        {% endif %}
+        <br>
+        <span class="text-info">Rating: </span><span class="badge badge-primary badge-pill">{{ book_rating }}</span>
+        <br>
   </li>
 </ul>
 <h3>Review Comments</h3>
@@ -31,11 +39,12 @@
             <span class="text-info">creator: </span><span>{{ review.creator.email }}</span>
             <br>
             <span class="text-info"> <a href="{% url 'book:review_edit' book.id review.id %}">Edit Review</a> </span>
-            <br>
+            <br>           
         </li>
     </ul>
     {% empty %}
         <span class="ml-5 text-info">No Comments</span>
 {% endfor %}
-<a href="{% url 'book:review_create' book.id %}" class="btn btn-primary">Add Review</a>
+    <a href="{% url 'book:review_create' book.id %}" class="btn btn-primary">Add Review</a>
+    <a href="{% url 'book:book_media' book.id %}" class="btn btn-primary">Media</a>
 {% endblock content %}
