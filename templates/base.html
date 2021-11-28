@@ -14,7 +14,7 @@
     <title>{% block title %}Book Review{% endblock title %} | Bookr</title>
     <link rel="stylesheet" href="{% static 'main.css' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Source+Sans+Pro&display=swap">
-    {% block head %}{% endblock head %}
+    {% block style %}{% endblock style %}
   </head>
   <body>
       {% comment %} Hell iafa {% endcomment %}
@@ -29,14 +29,23 @@
               <li class="nav-item active">
                 <a class="nav-link" href="{% url 'book:book_list' %}">Home <span class="sr-only">(current)</span></a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Logout</a>
-              </li>
+              {% if user.is_authenticated %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'accounts:logout' %}">Logout</a>
+                </li>
+              {% else %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'accounts:login' %}">LogIn</a>
+                </li>
+              {% endif %}
             </ul>
             <form class="form-inline my-2 my-lg-0">
               <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
               <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
             </form>
+            {% if user.is_authenticated %}
+             <p class="text-info mt-3">User : <span class="text-primary"><a href="{% url 'profile' %}">{{user.username}}</a></span></p>
+            {% endif %}
           </div>
         </nav>
         <div class="container-fluid">

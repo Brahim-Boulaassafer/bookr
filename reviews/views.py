@@ -1,6 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.utils import timezone
+from django.contrib.auth.decorators import permission_required, login_required, user_passes_test
+from django.core.exceptions import PermissionDenied
+
 
 from PIL import Image
 
@@ -34,6 +37,20 @@ def book_details(request, id):
     if book:
         reviews = book.review_set.all()
         book_rating= average_rating([review.rating for review in reviews])
+    
+    if request.user.is_authenticated:
+        max_viewed_books_length = 10
+        viewed_books = request.session.get('viewed_books',[])
+        viewed_book = [book.id, book.title]
+        
+        if viewed_book in viewed_books:
+            viewed_books.pop(viewed_books.index(viewed_book))
+
+        viewed_books.insert(0, viewed_book)
+        
+        viewed_books = viewed_books[:max_viewed_books_length]
+        request.session['viewed_books'] = viewed_books
+
     context = {'book':book, 'book_rating':book_rating, 'reviews': reviews}
     return render(request, 'reviews/book_details.html', context)
 
@@ -41,9 +58,11 @@ def book_search(request):
     form = SearchForm(request.GET or None)
     search_field = ''
     books = set()
+
     if form.is_valid():
         search_in = form.cleaned_data['search_in']
         search_field = form.cleaned_data['search']
+
         if search_in == 'title':
             books = Book.objects.filter(title__icontains= search_field)            
         else:
@@ -57,7 +76,20 @@ def book_search(request):
                 for book in contributor.book_set.all():
                     books.add(book)
 
-        
+        if request.user.is_authenticated:
+            search_history = request.session.get('search_history',[])
+            searching = [search_in , search_field]
+            
+            if searching in search_history:
+                search_history.pop(search_history.index(searching))
+            
+            search_history.insert(0,searching)
+            request.session['search_history'] = search_history
+    
+  
+
+
+
         
     context = {'form':form, 'book_list':books, 'search':search_field}
     return render(request, 'reviews/search-results.html',context)
@@ -80,13 +112,18 @@ def publisher_edit(request, pk=None):
     
     return render(request, 'reviews/instance-form.html',{ 'form':form, 'instance':publisher, 'title':'Publisher'})
 
-
+@login_required
 def review_edit(request, book_pk, review_pk= None):
     book = get_object_or_404(Book, pk=book_pk)
     review = None
     if review_pk is not None:
         review = get_object_or_404(Review, pk=review_pk)
     
+        user = request.user
+        if not user.is_staff or review.creator.id != user.id:
+            raise PermissionDenied
+
+
     form = ReviewForm(request.POST or None, instance=review)
     if form.is_valid():
         updated_view = form.save(commit=False)
@@ -101,7 +138,7 @@ def review_edit(request, book_pk, review_pk= None):
 
     return render(request, 'reviews/instance-form.html', {'form':form, 'instance': book, 'title':'Review', 'instance_model':review})
 
-
+@login_required()
 def book_media(request, pk):
     book = get_object_or_404(Book, pk=pk)
     form = BookMediaForm(request.POST or None, request.FILES or None, instance=book)
@@ -122,5 +159,13 @@ def book_media(request, pk):
     return render(request, 'reviews/instance-form.html', context)
 
     
+# @permission_required('edit_publisher')
+
+def is_staff_user(user):
+    return user.is_staff
+
+@user_passes_test(is_staff_user)
+def publisher_edit(request, pk=None):
+    pass
 
 

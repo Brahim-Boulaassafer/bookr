@@ -45,6 +45,8 @@
     {% empty %}
         <span class="ml-5 text-info">No Comments</span>
 {% endfor %}
-    <a href="{% url 'book:review_create' book.id %}" class="btn btn-primary">Add Review</a>
-    <a href="{% url 'book:book_media' book.id %}" class="btn btn-primary">Media</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'book:review_create' book.id %}" class="btn btn-primary">Add Review</a>
+        <a href="{% url 'book:book_media' book.id %}" class="btn btn-primary">Media</a>
+    {% endif %}
 {% endblock content %}

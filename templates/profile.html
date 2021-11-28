@@ -1,0 +1,61 @@
+{% extends 'base.html' %} 
+
+{% block title %}{{request.user.username}}{% endblock title %} 
+
+{% block style %}
+  <style>
+    .flexrow{
+      display:flex;
+      border: 2px black;
+    }
+    .flexrow > div{
+      flex: 1;
+    }
+    .infocell {
+      border: 2px solid green;
+      border-radius: 5px 25px;
+      background-color: white;
+      padding: 5px;
+      margin: 20px 5px 5px 5px;
+    }
+  </style>
+{% endblock style %}
+
+{% block content %}
+<div class="flexrow" >
+  <div class="infocell" >
+    <h2>Profile</h2>
+    <p>
+      Username: {{ request.user.username }} <br />
+      Name:{{request.user.first_name}} {{request.user.last_name}}<br />
+      Date Joined: {{ request.user.date_joined }} <br />
+      Email: {{ request.user.email }}<br />
+      Last Login: {{ request.user.last_login }}<br />
+    </p>
+  </div>
+  <div class="infocell">
+    <h2>Viewed Books</h2>
+    {% for book_id, book_title in request.session.viewed_books %}
+      <a href="{% url 'book:book_details' book_id %}">{{ book_title }}</a> <br>
+
+      {% empty %}
+        <p>No recently viewed books found.</p>
+    {% endfor %}  
+  </div>
+
+  <div class="infocell">
+    <h2>Search History</h2>
+    {% for search_in, search_field in request.session.search_history %}
+      <a href="{% url 'book-search' %}?search={{search_field}}&search_in={{search_in}}">{{ search_field }} ({{ search_in }})</a> <br>
+
+      {% empty %}
+        <p>No recently searched books found.</p>
+    {% endfor %}
+    
+    
+  </div>
+
+
+
+</div>
+{% endblock content %}
